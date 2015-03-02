@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin name="Auto Link Titles" version_long="10000" version_human="1.0.0" author="Sijad aka Mr.Wosi" website="http://skinod..com" update_check="http://skinod.com/updatechk/sodautolinktitles"><hooks><hook type="C" class="\IPS\Text\Parser"><![CDATA[//<?php
+
+class hook66 extends _HOOK_CLASS_
+{
+	/**
+	 * Parse Node
+	 *
+	 * @param	\DOMDocument		$document	The document
+	 * @param	\DOMElement			$node		The node to parse
+	 * @param	\DOMElement|null	$parent		The parent node to place $node into
+	 * @return	bool				If the node contains any contents
+	 */
+	protected function parseNode( $document, $node, $parent=NULL ) {
+		try
+		{
+			if($par = parent::parseNode( $document, $node, $parent ) AND isset($node->tagName) AND $node->tagName == 'body' ) {
+				$links = $document->getElementsByTagName("a");
+				if($links->length > 0)
+				foreach ($links as $link) {
+					$link->attributes->getNamedItem('href')->nodeValue;
+					// $href = filter_var($link->nodeValue, FILTER_VALIDATE_URL)
+	
+					if($link->attributes->getNamedItem('href') AND $href = filter_var($link->attributes->getNamedItem('href')->nodeValue, FILTER_VALIDATE_URL) AND $parsed = \IPS\Http\Url::utf8ParseUrl($href) AND preg_match('#^https?#i', $parsed['scheme'])) {
+						// TODO: Add Force option
+						if( $pos = \strpos($link->nodeValue, $parsed['host']) AND ($pos === 0 || $pos === 7 || $pos === 8 ) ) { // TODO: Make it better
+							$heads = @get_headers($href, 1);
+							if(!$heads) continue;
+							$heads['Content-Length'] = isset($heads['Content-Length']) ?: 0;
+							if(preg_match('/HTTP\/1\.\d\s(?!404+)/i', $heads[0]) AND intval($heads['Content-Length']) < 5120000) {
+								$response = \IPS\Http\Url::external( $href )->request()->get();
+								preg_match( '/^([^;]+)(?:;\s*charset=(.*))?/im', $response->httpHeaders['Content-Type'], $matches );
+								if(isset($matches[1]) && $matches[1] == 'text/html' && preg_match('#<title[^>]*>(.*)</title>#siU', $response->content, $match)) {
+									if(isset($matches[2]) && \strtolower($matches[2]) != 'utf-8' && function_exists('mb_convert_encoding')) {
+										$match[1] = @mb_convert_encoding($match[1], 'utf-8', $matches[2]);
+									}
+									unset($response);
+									$link->nodeValue = $match[1];
+								}
+							}
+						}
+					}
+				}
+			}
+			return $par;
+		}
+		catch ( \RuntimeException $e )
+		{
+			return call_user_func_array( 'parent::' . __FUNCTION__, func_get_args() );
+		}
+	}
+}]]></hook></hooks><htmlFiles/><cssFiles/><jsFiles/><resourcesFiles/><lang/><versions><version long="10000" human="1.0.0"><![CDATA[//<?php
+
+
+/* To prevent PHP errors (extending class does not exist) revealing path */
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+{
+	header( ( isset( $_SERVER['SERVER_PROTOCOL'] ) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
+
+/**
+ * Install Code
+ */
+class ips_plugins_setup_install
+{
+	/**
+	 * ...
+	 *
+	 * @return	array	If returns TRUE, upgrader will proceed to next step. If it returns any other value, it will set this as the value of the 'extra' GET parameter and rerun this step (useful for loops)
+	 */
+	public function step1()
+	{
+		
+	}
+	
+	// You can create as many additional methods (step2, step3, etc.) as is necessary.
+	// Each step will be executed in a new HTTP request
+}]]></version></versions></plugin>
