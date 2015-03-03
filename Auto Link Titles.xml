@@ -18,12 +18,13 @@ class hook66 extends _HOOK_CLASS_
 				$links = $document->getElementsByTagName("a");
 				if($links->length > 0)
 				foreach ($links as $link) {
-					$link->attributes->getNamedItem('href')->nodeValue;
+					
 					// $href = filter_var($link->nodeValue, FILTER_VALIDATE_URL)
-	
 					if($link->attributes->getNamedItem('href') AND $href = filter_var($link->attributes->getNamedItem('href')->nodeValue, FILTER_VALIDATE_URL) AND $parsed = \IPS\Http\Url::utf8ParseUrl($href) AND preg_match('#^https?#i', $parsed['scheme'])) {
 						// TODO: Add Force option
-						if( $pos = \strpos($link->nodeValue, $parsed['host']) AND ($pos === 0 || $pos === 7 || $pos === 8 ) ) { // TODO: Make it better
+						$pos = \strpos($link->nodeValue, $parsed['host']);
+						if( $pos === 0 || $pos === 7 || $pos === 8 ) { // TODO: Make it better
+	
 							$heads = @get_headers($href, 1);
 							if(!$heads) continue;
 							$heads['Content-Length'] = isset($heads['Content-Length']) ?: 0;
