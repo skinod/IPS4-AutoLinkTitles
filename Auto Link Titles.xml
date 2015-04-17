@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin name="Auto Link Titles" version_long="10000" version_human="1.0.0" author="Sijad aka Mr.Wosi" website="http://skinod..com" update_check="http://skinod.com/updatechk/sodautolinktitles"><hooks><hook type="C" class="\IPS\Text\Parser"><![CDATA[//<?php
 
-class hook66 extends _HOOK_CLASS_
+class hook124 extends _HOOK_CLASS_
 {
+
 	/**
 	 * Parse Node
 	 *
@@ -47,7 +48,14 @@ class hook66 extends _HOOK_CLASS_
 		}
 		catch ( \RuntimeException $e )
 		{
-			return call_user_func_array( 'parent::' . __FUNCTION__, func_get_args() );
+			if ( method_exists( get_parent_class(), __FUNCTION__ ) )
+			{
+				return call_user_func_array( 'parent::' . __FUNCTION__, func_get_args() );
+			}
+			else
+			{
+				throw $e;
+			}
 		}
 	}
 }]]></hook></hooks><htmlFiles/><cssFiles/><jsFiles/><resourcesFiles/><lang/><versions><version long="10000" human="1.0.0"><![CDATA[//<?php
@@ -73,6 +81,8 @@ class ips_plugins_setup_install
 	public function step1()
 	{
 		
+
+		return TRUE;
 	}
 	
 	// You can create as many additional methods (step2, step3, etc.) as is necessary.
